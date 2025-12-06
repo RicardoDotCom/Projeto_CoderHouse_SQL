@@ -56,6 +56,7 @@ INSERT INTO pedido (id_cliente_pedido, id_produto_pedido, id_condicao_pagamento_
 -- =========================================
 
 -- 2.1 View: vw_clientes_endereco
+-- Objetivo: Permite buscar o nome e onde o cliente mora com uma só consulta.
 CREATE OR REPLACE VIEW vw_clientes_endereco AS
 SELECT
     c.id_cliente,
@@ -72,6 +73,7 @@ JOIN
     endereco e ON c.id_endereco_cliente = e.id_endereco;
 
 -- 2.2 View: vw_produtos_categoria
+-- Objetivo: Auxilia na visualição dos itens do estoque, sabendo qual produto está em qual categoria. 
 CREATE OR REPLACE VIEW vw_produtos_categoria AS
 SELECT
     p.id_produto,
@@ -88,6 +90,7 @@ JOIN
 -- =========================================
 
 -- 3.1 Função: fn_calcular_imposto (Calcula 18% de imposto)
+-- Objetivo: Permite calcular o imposto de forma rápida, sem precisar repetir a fórmula toda vez.
 DELIMITER //
 
 CREATE FUNCTION fn_calcular_imposto(preco_produto DECIMAL(10, 2))
@@ -102,6 +105,8 @@ END
 //
 
 -- 3.2 Função: fn_contar_pedidos_cliente
+-- Objetivo: Auxilia a identificar rapidamente quais clientes são os que realizam mais pedidos.
+
 DELIMITER //
 
 CREATE FUNCTION fn_contar_pedidos_cliente(cliente_id INT)
@@ -122,6 +127,7 @@ END
 -- =========================================
 
 -- 4.1 Stored Procedure: sp_inserir_novo_produto
+-- Objetivo: Simplifica a inclusão de novos produtos, garantindo que todos os campos sejam preenchidos corretamente de uma vez só. 
 DELIMITER //
 
 CREATE PROCEDURE sp_inserir_novo_produto(
@@ -137,6 +143,7 @@ END
 //
 
 -- 4.2 Stored Procedure: sp_pedidos_por_condicao_pagamento
+-- Objetivo: Gera relatórios específicos sobre quais são as formas de pagamento mais usadas pelos clientes.
 DELIMITER //
 
 CREATE PROCEDURE sp_pedidos_por_condicao_pagamento(
@@ -169,10 +176,13 @@ END
 -- =========================================
 
 -- 5.1 Trigger: tr_before_padronizar_endereco (BEFORE UPDATE)
+-- Importante! Exclui a trigger antiga, se existir, pois não consegui que atualizasse
+DROP TRIGGER IF EXISTS tr_before_padronizar_endereco;
+
 -- OBJETIVO: Garante que os campos 'cidade' e 'estado' sejam sempre salvos em CAIXA ALTA (MAIÚSCULAS) para padronização.
 DELIMITER //
 
-CREATE OR REPLACE TRIGGER tr_before_padronizar_endereco
+CREATE TRIGGER tr_before_padronizar_endereco
 BEFORE UPDATE ON endereco
 FOR EACH ROW
 BEGIN
@@ -186,10 +196,13 @@ END //
 DELIMITER ;
 
 -- 5.2 Trigger: tr_after_aplicar_desconto_produto (AFTER INSERT na tabela PEDIDO)
+-- Importante! Exclui a trigger antiga, se existir, pois não consegui que atualizasse 
+DROP TRIGGER IF EXISTS tr_after_aplicar_desconto_produto;
+
 -- OBJETIVO: Reduz o preço do produto em 5% (simulando desconto/promoção) DEPOIS que ele é vendido em um pedido.
 DELIMITER //
 
-CREATE OR REPLACE TRIGGER tr_after_aplicar_desconto_produto
+CREATE TRIGGER tr_after_aplicar_desconto_produto
 AFTER INSERT ON pedido
 FOR EACH ROW
 BEGIN
